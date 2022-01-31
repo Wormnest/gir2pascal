@@ -2,3 +2,7 @@
 *.or
 *.ppu
 *.rsj
+backup
+bin
+lib
+gir2pascal.lps

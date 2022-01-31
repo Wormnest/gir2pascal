@@ -80,7 +80,7 @@ var
   Str: String;
 begin
   Strs := TStringList.Create;
-  Strs.Delimiter:=':';
+  Strs.Delimiter:= PathSeparator;
   Strs.StrictDelimiter:=True;
   Strs.DelimitedText:=APaths;
 

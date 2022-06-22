@@ -1310,6 +1310,7 @@ var
   WrittenFields: Integer;
   PackedBitsFieldCount: Integer = 0;
   PackedBits: TStringList = nil;
+  UnionNameCount: Integer = 0;
 
   function GetTypeForProperty(AProperty: TgirProperty; out SetFound: Boolean): String;
   var
@@ -1435,6 +1436,7 @@ var
   var
     SetFound: Boolean;
     PropType: String;
+    UnionName: String;
   begin
 
     if not MeetsVersionConstraints(Field) then
@@ -1480,11 +1482,18 @@ var
        otCallback : TypeDecl.Add(IndentText(WriteCallBack(TgirCallback(Field),True, UsedNames),4,0));
        otUnion    :
             begin
+              UnionName := Field.Name;
+              // If union doesn't have a name, give it one
+              if (UnionName = '') then
+              begin
+                UnionName := 'union_' + IntToStr(UnionNameCount);
+                Inc(UnionNameCount);
+              end;
               // we have to create a union outside the object and include it as a field
-              Field.CType := AItem.CType+'_union_'+Field.Name;
+              Field.CType := AItem.CType+'_union_'+UnionName;
               ResolveTypeTranslation(Field);
               HandleUnion(TgirUnion(Field));
-              TypeDecl.Add(IndentText(SanitizeName(Field.Name, UsedNames)+': '+ Field.TranslatedName+'; //union extracted from object and named '''+Field.TranslatedName+'''',4,0));
+              TypeDecl.Add(IndentText(SanitizeName(UnionName, UsedNames)+': '+ Field.TranslatedName+'; //union extracted from object and named '''+Field.TranslatedName+'''',4,0));
             end
        end;
     end;

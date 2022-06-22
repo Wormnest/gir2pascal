@@ -1394,6 +1394,7 @@ var
   Element: TDOMElement absolute ANode;
   Node: TDomNode;
   AttrValue: String;
+  TempVal: String;
 begin
   if ANode = nil then
     girError(geError, 'Creating '+ClassName+' with a nil node');
@@ -1403,7 +1404,11 @@ begin
     FCType := Element.GetAttribute('glib:type-name');
   FName  := Element.GetAttribute('name');
   try
-    FVersion:= girVersion(Element.GetAttribute('version'));
+    TempVal := Element.GetAttribute('version');
+    if TempVal <> '' then
+      FVersion:= girVersion(TempVal)
+    else
+      FVersion := TgirNamespace(FOwner).Version.AsMajor;
   except
     FVersion := TgirNamespace(FOwner).Version.AsMajor;
   end;
@@ -1427,7 +1432,11 @@ begin
       FDeprecatedMsg := StringReplace(FDeprecatedMsg, '''', '''''', [rfReplaceAll]); // replace ' with ''
     end;
     try
-      FDeprecatedVersion:=girVersion(TDOMElement(ANode).GetAttribute('deprecated-version'));
+      TempVal := TDOMElement(ANode).GetAttribute('deprecated-version');
+      if TempVal <> '' then
+        FDeprecatedVersion:= girVersion(TempVal)
+      else
+        FDeprecatedVersion:= TgirNamespace(FOwner).Version.AsMajor;
     except
       FDeprecatedVersion:=TgirNamespace(FOwner).Version.AsMajor;
     end;

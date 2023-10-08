@@ -2203,11 +2203,11 @@ end;
 
 function TPascalUnit.SanitizeName(AName: String; AExistingUsedNames: TStringList = nil): String;
 var
-  PascalReservedWords : array[0..30] of String =
+  PascalReservedWords : array[0..32] of String =
     ('begin', 'end', 'type', 'of', 'in', 'out', 'function', 'string','file', 'default',
      'procedure', 'string', 'boolean', 'array', 'set', 'destructor', 'destroy', 'program',
      'property', 'object', 'private', 'constructor', 'inline', 'result', 'interface',
-     'const', 'raise', 'unit', 'label', 'xor', 'implementation');
+     'const', 'raise', 'unit', 'label', 'xor', 'implementation', 'var', 'do');
   Name: String;
   Sanity: Integer = 0;
   Sucess: Boolean;
@@ -2216,8 +2216,10 @@ begin
   Result := AName;
 
   for Name in PascalReservedWords do
-    if Name = LowerCase(AName) then
+    if Name = LowerCase(AName) then begin
       Result := Aname+'_';
+      girError(geWarn, 'Adjusting name because it is a Pascal reserved word: '+ AName);
+    end;
 
   Result := StringReplace(Result, '-','_',[rfReplaceAll]);
   Result := StringReplace(Result, ' ','_',[rfReplaceAll]);

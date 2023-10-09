@@ -2514,6 +2514,8 @@ begin
      Str.WriteString(FinalizeSection.AsString);
 
   Str.WriteString('end.');
+  { End with a newline (writing empty string here doesn't work)}
+  Str.WriteString(sLineBreak);
 
   Result.Position:=0;
 end;
@@ -2524,6 +2526,8 @@ begin
   begin
     FTestPascalFile.WriteString(FTestPascalBody.Text);
     FTestPascalFile.WriteString('end.');
+    { End with a newline (writing empty string here doesn't work)}
+    FTestPascalFile.WriteString(sLineBreak);
     //FTestCFile.Position:=0;
     FTestPascalFile.Position:=0;
   end;

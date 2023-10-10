@@ -562,6 +562,7 @@ begin
   begin
     case GirTokenNameToToken(Node.NodeName) of
       gtDoc,
+      gtDocVersion,
       gtDocDeprecated:; // ignore
       gtType: FPropType := TgirNamespace(Owner).LookupTypeByName(Node.GetAttribute('name'), Node.GetAttribute('c:type'));
       gtArray:
@@ -767,6 +768,7 @@ begin
   begin
     case GirTokenNameToToken(Node.NodeName) of
       gtDoc,
+      gtDocVersion,
       gtDocDeprecated:;
       gtType: FFields.Add(TgirTypeParam.Create(Owner, ANode));
       gtCallback: FFields.Add(TgirCallback.Create(Owner, Node));
@@ -786,6 +788,7 @@ var
 begin
   case ANodeType of
     gtDoc,
+    gtDocVersion,
     gtDocDeprecated,
     gtSourcePosition:;
     gtField : HandleField(ANode);
@@ -938,6 +941,7 @@ begin
     Token := GirTokenNameToToken(Node.NodeName);
     case Token of
       gtDoc,
+      gtDocVersion,
       gtDocDeprecated:;
       gtType:    begin
                    C_Type := AssignC_Type(Node.GetAttribute('c:type'));
@@ -1084,7 +1088,8 @@ var
     begin
       case GirTokenNameToToken(PNode.NodeName) of
         gtDoc,
-      gtDocDeprecated:;
+        gtDocVersion,
+        gtDocDeprecated:;
         gtParameter:
           begin
             Param := TGirFunctionParam.Create(AOwner, PNode, False);
@@ -1126,6 +1131,7 @@ begin
   begin
     case GirTokenNameToToken(Node.NodeName) of
       gtDoc,
+      gtDocVersion,
       gtDocDeprecated,
       gtSourcePosition:;
       gtReturnValue: FReturns := TgirFunctionReturn.Create(AOwner, Node);
@@ -1228,6 +1234,7 @@ begin
   begin
     case GirTokenNameToToken(Node.NodeName) of
       gtDoc,
+      gtDocVersion,
       gtDocDeprecated,
       gtSourcePosition:;
       gtMember: AddMember(Node.GetAttribute('name'), Node.GetAttribute('value'),Node.GetAttribute('c:identifier'), Node);

@@ -51,6 +51,7 @@ type
     FGLibGetType: String;
     FHasFields: Boolean;
     FImpliedPointerLevel: Integer;
+    FIntrospectable: Boolean;
     FName: String;
     FObjectType: TGirObjectType;
     FDisguised: Boolean;
@@ -68,6 +69,7 @@ type
     property Name: String read FName;
     property TranslatedName: String read FTranslatedName write FTranslatedName;
     property ImpliedPointerLevel: Integer read FImpliedPointerLevel write SetImpliedPointerLevel; // only grows
+    property Introspectable: Boolean read FIntrospectable;
     property Owner: TObject Read FOwner; // TgirNameSpace
     property Doc: String read FDoc;
     property Bits: Integer read FBits;
@@ -1421,6 +1423,7 @@ begin
   end;
 
   FDisguised := Element.GetAttribute('disguised') = '1';
+  FIntrospectable := Element.GetAttribute('introspectable') <> '0';
   FGLibGetType:= Element.GetAttribute('glib:get-type');
   AttrValue := Element.GetAttribute('bits');
   if AttrValue <> '' then

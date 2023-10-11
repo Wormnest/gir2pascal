@@ -769,22 +769,49 @@ procedure TPascalUnit.ResolveFuzzyTypes;
 var
   BaseType: TGirBaseType;
   FuzzyType : TgirFuzzyType absolute BaseType;
-  i: Integer;
+  i, ptrchar: Integer;
   CTypesType: String;
+  TempCName: String;
 begin
   // here we wil try to find unresolved types that have compatible types in pascal.
   // for instance xlib uses guint but does not depend on glib where that is defined, we will try to replace those with cuint from ctypes
+  girError(geDebug,'TPascalUnit.ResolveFuzzyTypes');
   for i := 0 to NameSpace.Types.Count-1 do
     begin
       BaseType := TGirBaseType(NameSpace.Types.Items[i]);
+      girError(geDebug,'BaseType ' + BaseType.Name + ', C type ' + BaseType.CType +
+               ', implied ptr level ' + IntToStr(BaseType.ImpliedPointerLevel));
       if BaseType.InheritsFrom(TgirFuzzyType) and (FuzzyType.ResolvedType = nil) then
       begin
         CTypesType := LookupGTypeToCType(FuzzyType.CType);
+        girError(geDebug,'FuzzyType CType: ' + FuzzyType.CType + ', CTypesType: ' + CTypesType);
         if CTypesType <> '' then
         begin
           FuzzyType.TranslatedName:= CTypesType;
           //FuzzyType.TranslatedName:= FNameSpace.CPrefix + FuzzyType.Name;
           FuzzyType.Writing := msWritten;
+        end
+        else begin
+          // Remove *
+          TempCName := FuzzyType.CType;
+          repeat
+            ptrchar := Pos('*', TempCName);
+            if ptrchar > 0 then
+              begin
+                Delete(TempCName, ptrchar, 1);
+                FuzzyType.ImpliedPointerLevel := FuzzyType.ImpliedPointerLevel-1;
+              end;
+          until ptrchar = 0;
+          CTypesType := LookupGTypeToCType(TempCName);
+          girError(geDebug,'After * removal FuzzyType CType: ' + TempCName + ', CTypesType: ' + CTypesType);
+          if CTypesType <> '' then
+          begin
+            FuzzyType.TranslatedName:= CTypesType;
+            //FuzzyType.TranslatedName:= FNameSpace.CPrefix + FuzzyType.Name;
+            FuzzyType.Writing := msWritten;
+          end
+          else
+              girError(geWarn,'Fuzzy type lookup failed for: ' + FuzzyType.CType);
         end;
       end;
     end;

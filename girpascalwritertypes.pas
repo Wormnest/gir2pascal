@@ -892,6 +892,11 @@ begin
   if (AItem.PascalName = AItem.CType) and (AItem.Name <> 'file') then
       Exit; // is a native pascal type plus a = a doesn't fly with the compiler
 
+  { We are using a hack by defining char* and some others as Native Types, until
+    we can figure out a better way to handle those without other side effects.
+    We need to skip these here because * as part of a type name is not possible. }
+  if AItem.CType[Length(AItem.CType)] = '*' then
+    Exit;
 
   if AItem.CType <> 'file' then
     AItem.CType:=SanitizeName(AItem.CType);

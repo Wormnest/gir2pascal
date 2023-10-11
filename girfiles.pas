@@ -87,7 +87,7 @@ begin
         end;
       gtPackage, gtCInclude: ;// ignore for now
     else
-      girError(geDebug, 'Unknown Node Type for Reposiotory: '+ node.NodeName);
+      girError(geDebug, 'Unknown Node Type for Repository: '+ node.NodeName);
     end;
     Node := Node.NextSibling;
   end;

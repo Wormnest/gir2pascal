@@ -2264,10 +2264,18 @@ begin
     repeat
       Inc(Sanity);
       try
-        AExistingUsedNames.Add(LowerCase(TestName));
-        Result := TestName;
-        Sucess := True;
+        if AExistingUsedNames.IndexOf(LowerCase(TestName)) < 0 then begin
+           AExistingUsedNames.Add(LowerCase(TestName));
+           Result := TestName;
+           Sucess := True;
+        end
+        else begin
+          girError(geWarn, 'Adjusting name because it is already in use: '+ TestName);
+          TestName := Result + IntToStr(Sanity);
+          Sucess := False;
+        end;
       except
+        girError(geWarn, 'Adjusting name because it is already in use: '+ TestName);
         TestName := Result + IntToStr(Sanity);
         Sucess := False;
       end;

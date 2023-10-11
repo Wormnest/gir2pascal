@@ -71,7 +71,7 @@ type
     procedure HandleClassStruct(ANode: TDomNode); // one step above GType. Is the 'Virtual' part of an object (VMT)
     procedure HandleClass(ANode: TDomNode); // one step above GType. Is the object structure and it's methods. ClassStruct is like the VMT
     procedure HandleInterface(ANode: TDomNode);
-    procedure AddGLibBaseTypes;
+    procedure AddBaseTypes(IncludeGLibTypes: Boolean);
   public
     procedure AddType(AType: TGirBaseType);
     function LookupTypeByName(AName: String; const ACType: String; SearchOnly: Boolean = False): TGirBaseType;
@@ -327,7 +327,7 @@ begin
   AddType(Item);
 end;
 
-procedure TgirNamespace.AddGLibBaseTypes;
+procedure TgirNamespace.AddBaseTypes(IncludeGLibTypes: Boolean);
   function AddNativeTypeDef(GType: String; PascalCName: String; TranslatedName: String): TgirNativeTypeDef;
   var
     NativeType: TgirNativeTypeDef;
@@ -343,8 +343,18 @@ procedure TgirNamespace.AddGLibBaseTypes;
 var
   i: Integer;
 begin
-  for i := 0 to CTypesMax-1 do
-    AddNativeTypeDef(TypesGTypes[i], TypesPascalCTypes[i], '');
+  // Add generic C types
+  girError(geDebug,'Add generic base types....');
+  for i := 0 to GenericCTypesCount-1 do
+    AddNativeTypeDef(TGenericConversionData[i].CTypeName, TGenericConversionData[i].PascalTypeName, '');
+
+  if IncludeGLibTypes then
+  begin
+    // Add GLib specific C types
+    girError(geDebug,'Add GLib base types....');
+    for i := 0 to GLibCTypesCount-1 do
+      AddNativeTypeDef(TGLibConversionData[i].CTypeName, TGLibConversionData[i].PascalTypeName, '');
+  end;
 end;
 
 procedure TgirNamespace.AddType(AType: TGirBaseType);
@@ -599,7 +609,9 @@ begin
   FMaxSymbolVersion.Major:=MaxInt;
 
   if FNameSpace = 'GLib' then
-    AddGLibBaseTypes;
+    AddBaseTypes(True)
+  else if not UsesGLib then
+    AddBaseTypes(False);
 end;
 
 destructor TgirNamespace.Destroy;

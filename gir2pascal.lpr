@@ -255,7 +255,7 @@ begin
     AddDefaultPaths;
 
   if FCmdOptions.HasOption('output-directory') then
-    FOutPutDirectory:=IncludeTrailingPathDelimiter(FCmdOptions.OptionValue('output-directory'))
+    FOutPutDirectory:=IncludeTrailingPathDelimiter(ExpandFileName(FCmdOptions.OptionValue('output-directory')))
   else
     FOutPutDirectory:=IncludeTrailingPathDelimiter(GetCurrentDir);
 

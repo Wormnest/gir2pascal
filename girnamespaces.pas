@@ -506,14 +506,22 @@ begin
   NS := Self;
   // some basic fixes
   PlainCType:=StringReplace(StripPointers(ACType, @PointerLevel), ' ', '_', [rfReplaceAll]);
-  if (PlainCType = 'gchar') or {(PlainCType = 'guchar') or} (PlainCType = 'char') or (PlainCType = 'const_char') then
-    AName := 'GLib.utf8';
+  girError(geDebug,'Plain C Type: ' + PlainCType + ', pointer level: ' + IntToStr(PointerLevel));
 
-  if (PlainCType = 'GType')  {or (AName = 'Type')} or (AName = 'GType')then
-    AName := 'GLib.Type';
+  if UsesGLib then begin
+    if (PlainCType = 'gchar') or (PlainCType = 'char') or (PlainCType = 'const_char') then
+      AName := 'GLib.utf8';
+
+    if (PlainCType = 'GType') or (AName = 'GType')then
+      AName := 'GLib.Type';
+    girError(geDebug,'... uses GLib, name now: ' + AName);
+  end;
 
   if AName = 'any' then
-    AName := 'gpointer';
+    if UsesGLib then
+      AName := 'gpointer'
+    else
+      AName := 'pointer';
 
   FPos := Pos('.', AName);
 

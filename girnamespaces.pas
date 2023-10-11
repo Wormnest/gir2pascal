@@ -448,8 +448,22 @@ begin
 end;
 
 procedure TgirNamespace.ParseSubNode(ANode: TDomNode);
+var
+  CurToken: TGirToken;
 begin
-  case GirTokenNameToToken(ANode.NodeName) of
+  CurToken := GirTokenNameToToken(ANode.NodeName);
+  if CurToken = gtInvalid then begin
+    girError(geError, 'Unknown NodeType: '+ANode.NodeName);
+    exit;
+  end
+  else if TDOMElement(ANode).GetAttribute('introspectable') = '0' then begin
+    girError(geDebug, 'Node type: ' + ANode.NodeName + ', name: ' + TDOMElement(ANode).GetAttribute('name') + ' is not introspectable.');
+    // Even though it isn't introspectable, in Pascal we should be able to
+    // use it. So, just ignore for now. In the future make it an option.
+    //exit;
+  end;
+
+  case CurToken of
     gtAlias:       HandleAlias(ANode);
     gtConstant:    HandleConstant(ANode);
     gtRecord:      HandleRecord(ANode);

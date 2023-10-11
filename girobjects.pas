@@ -512,9 +512,6 @@ begin
   FVersion := TgirNamespace(FOwner).Version.AsMajor;
   FDeprecatedVersion := girVersion(MaxInt, MaxInt);
 
-  //now some fixups :(
-  if FName = 'gchar' then
-    FName := 'utf8';
   FTranslatedName:=AGType;
   FPascalName:=APascalCTypeName;
   //to create PPType
@@ -1271,8 +1268,13 @@ begin
   Node := TDomELement(ANode.FindNode('type'));
   FTypeDecl := TgirNamespace(Owner).LookupTypeByName(Node.GetAttribute('name'), Node.GetAttribute('c:type'));
   FValue:= TDOMElement(ANode).GetAttribute('value');
-  FIsString:=(Node.GetAttribute('c:type') = 'gchar*') or (Node.GetAttribute('name') = 'utf8');
-  //girError(geDebug, Format('Added constant "%s" with value "%s" of type "%s"',[Name, Value, FTypeDecl.Name]));
+
+  FIsString:=
+    (Node.GetAttribute('c:type') = 'gchar*') or
+    (Node.GetAttribute('name') = 'utf8') or
+    (Node.GetAttribute('c:type') = 'char*');
+
+  girError(geDebug, Format('Added constant "%s" with value "%s" of type "%s"',[Name, Value, FTypeDecl.Name]));
   FObjectType:=otConstant;
 end;
 

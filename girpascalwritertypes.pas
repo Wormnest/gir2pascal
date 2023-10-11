@@ -2397,10 +2397,18 @@ begin
       repeat
         try
           Entry := SanitizeName(Item.CName+Suffix, AUsedNames);
-          if Entry <> Item.CName+Suffix then
-            raise Exception.Create('');
-          Consts.AddObject(Entry, TObject(PtrUInt(NewConst.Lines.Count)));
-          break;
+
+          if Entry = Item.CName + Suffix then begin
+            Consts.AddObject(Entry, TObject(PtrUInt(NewConst.Lines.Count)));
+            break;
+          end;
+
+          girError(geWarn, 'Const Item: '+ Item.Name + ', type: ' + Item.CType);
+
+          if Sanity > 0 then
+            Suffix := '__'+IntToStr(Sanity)
+          else
+            Suffix := '_';
         except
           if Sanity > 0 then
             Suffix := '__'+IntToStr(Sanity)

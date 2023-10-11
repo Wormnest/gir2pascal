@@ -1292,7 +1292,7 @@ begin
   FResolvedType := AValue;
   if Assigned(FResolvedType) then
     FResolvedType.ImpliedPointerLevel:=ImpliedPointerLevel;
-  //girError(geDebug, 'Resolved FuzzyType '+AValue.Name);
+  girError(geDebug, 'Resolved FuzzyType '+AValue.Name);
 end;
 
 constructor TgirFuzzyType.Create(AOwner: TObject; AName: String; ACtype: String);
@@ -1350,7 +1350,8 @@ begin
       NodeCType := Node.GetAttribute('c:type'); // "c:type" attribute of ANode
   end;
 
-  //WriteLn('ALIAS: ', NodeName, ' ', NodePath);
+  girError(geDebug, 'Alias: name: ' + NodeName + ', path: '+ NodePath + ', ctype: ' + NodeCType);
+
   FForType := TgirNamespace(Owner).LookupTypeByName(NodeName, NodeCType);
   if FIsOpaque then assert(FForType.ObjectType = otFuzzyType); // sanity check
   FObjectType:=otAlias;

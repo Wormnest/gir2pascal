@@ -338,12 +338,14 @@ begin
 
   if FSimpleUnit then
   begin
+    girError(geDebug,'Adding simple unit...');
     FUnits.Add(TPascalUnit.Create(Self, FNameSpace, FOptions, PascalUnitTypeAll, FUnitPrefix));
     //Units[utSimple] := TPascalUnit.Create(Self, FNameSpace, FOptions, [utSimple])
 
   end
   else
   begin
+    girError(geDebug,'Adding non simple unit...');
     //Units[utConsts] := TPascalUnit.Create(Self, FNameSpace, FOptions, [utConsts]);
     //Units[utTypes] := TPascalUnit.Create(Self, FNameSpace, FOptions, [utTypes]);
     //Units[utFunctions] := TPascalUnit.Create(Self, FNameSpace, FOptions, [utFunctions]);
@@ -388,6 +390,7 @@ var
   PUnit: TPascalUnit;
   lUsedNames: TStringList;
 begin
+  girError(geDebug,'GenerateUnits... ');
   for Pointer(PUnit) in FUnits do
     if Assigned(PUnit) then
        PUnit.GenerateUnit;
@@ -665,6 +668,7 @@ var
   TypeSect: TPDeclarationType;
   i: Integer;
 begin
+  girError(geDebug, '-- Add GLib support code ...');
   //if not (FUnitType in [utSimple,utTypes]) then
   //  Exit;
   if not ((FUnitType = PascalUnitTypeAll) or (utTypes in FUnitType )) then
@@ -683,19 +687,21 @@ procedure TPascalUnit.ProcessType(AType: TGirBaseType; AForceWrite: Boolean = Fa
 begin
   if (AType = nil)  then
     Exit;
-
+  girError(geDebug, 'ProcessType');
   if (AType.ObjectType = otFuzzyType) and (TgirFuzzyType(AType).ResolvedType <> nil) then
   begin
+    girError(geDebug, 'Fuzzy');
     TgirFuzzyType(AType).ResolvedType.ImpliedPointerLevel := AType.ImpliedPointerLevel;
     AType := TgirFuzzyType(AType).ResolvedType;
   end;
 
+  girError(geDebug, 'NameSpace: ' + FNameSpace.NameSpace + ', ProcessLevel: ' + IntToStr(ProcessLevel));
   if (AType.Owner <> FNameSpace) then
     Exit; // it's written in another Namespace
 
   if (AType.CType = '') then //(AType.Name = '') then
   begin
-    //girError(geWarn, 'Type.Ctype undefined! : '+ Atype.Name);
+    girError(geWarn, 'Type.Ctype undefined! : '+ Atype.Name);
     //Halt;
 
   end;
@@ -714,6 +720,7 @@ begin
   end;
   if (AType.Writing = msWritten) or ((AType.Writing = msWriting) {and not AForceWrite}) then
   begin
+    girError(geDebug, 'Already Written Type Used: ' + AType.TranslatedName);
     //WriteLn('Already Written Type Used: ', AType.TranslatedName);
     Exit;
   end;
@@ -727,7 +734,7 @@ begin
 
   Inc(ProcessLevel);
   AType.Writing := msWriting;
-
+  girError(geDebug, 'Handle AType.ObjectType...');
   case AType.ObjectType of
     otAlias:         HandleAlias(TgirAlias(AType));
     otCallback:      HandleCallback(TgirCallback(AType));
@@ -911,7 +918,9 @@ var
   TypeSect: TPDeclarationType;
   ProperUnit: TPascalUnit;
 begin
+  girError(geDebug, 'HandleNativeType...');
   ProperUnit := FGroup.GetUnitForType(utTypes);
+  girError(geDebug, 'ProperUnit.FLibName: ' + ProperUnit.FLibName);
   if ProperUnit <> Self then begin
     ProperUnit.HandleNativeType(AItem);
     Exit;
@@ -931,8 +940,10 @@ begin
   TypeSect := WantTypeSection;
   AItem.TranslatedName:=AItem.CType;
   //WritePointerTypesForType(Aitem, AItem.CType, AItem.ImpliedPointerLevel, TypeSect.Lines);
-  if AItem.Name <> 'file' then
+  if AItem.Name <> 'file' then begin
+    girError(geWarn, 'Sanitize again CType: '+ AItem.CType + ', PascalName: ' + AItem.PascalName);
     TypeSect.Lines.Add(IndentText(SanitizeName(AItem.CType)+ ' = '+ AItem.PascalName+';', 2,0));
+  end;
 end;
 
 procedure TPascalUnit.HandleAlias(AItem: TgirAlias);
@@ -942,6 +953,7 @@ var
   ProperUnit: TPascalUnit;
   TargetType: TGirBaseType = nil;
 begin
+  girError(geDebug, 'HandleAlias...');
   ProperUnit := FGroup.GetUnitForType(utTypes);
   if ProperUnit <> Self then begin
     ProperUnit.HandleAlias(AItem);
@@ -989,6 +1001,7 @@ var
   CB: String;
   ProperUnit: TPascalUnit;
 begin
+  girError(geDebug, 'HandleCallback...');
   ProperUnit := FGroup.GetUnitForType(utTypes);
   if ProperUnit <> Self then begin
     ProperUnit.HandleCallback(AItem);
@@ -1012,6 +1025,7 @@ var
   ProperUnit: TPascalUnit;
   IntType: String;
 begin
+  girError(geDebug, 'HandleEnum...');
   ProperUnit := FGroup.GetUnitForType(utTypes);
   if ProperUnit <> Self then begin
     ProperUnit.HandleEnum(AItem, ADeclareType);
@@ -1071,6 +1085,7 @@ var
   VarType: String;
  }
 begin
+  girError(geDebug, 'Handle Bitfield...');
   HandleEnum(AItem, True);
 (*
   Intf := WantTypeSection;
@@ -1114,6 +1129,7 @@ procedure TPascalUnit.HandleRecord(AItem: TgirRecord);
 var
   ProperUnit: TPascalUnit;
 begin
+  girError(geDebug, 'HandleRecord...');
   ProperUnit := FGroup.GetUnitForType(utTypes);
   if ProperUnit <> Self then begin
     ProperUnit.HandleRecord(AItem);
@@ -1134,6 +1150,7 @@ var
   Plain: String;
   ProperUnit: TPascalUnit;
 begin
+  girError(geDebug, 'HandleOpaqueType...');
   ProperUnit := FGroup.GetUnitForType(utTypes);
   if ProperUnit <> Self then begin
     ProperUnit.HandleOpaqueType(AItem);
@@ -1199,6 +1216,7 @@ var
   Postfix: String;
   ProperUnit: TPascalUnit;
 begin
+  girError(geDebug, 'HandleFunction: ' + AItem.Name);
   ProperUnit := FGroup.GetUnitForType(utFunctions);
   if ProperUnit <> Self then
   begin
@@ -1577,6 +1595,7 @@ var
   AddedBitSizedType: Boolean;
   ProperUnit: TPascalUnit = nil;
 begin
+  girError(geDebug, 'HandleObject...');
   case AItem.ObjectType of
     otObject:      ProperUnit := FGroup.GetUnitForType(utTypes);
     otClassStruct: ProperUnit := FGroup.GetUnitForType(utTypes); //class structs go in types!
@@ -1675,6 +1694,7 @@ procedure TPascalUnit.HandleUnion(AItem: TgirUnion);
 var
   ProperUnit: TPascalUnit;
 begin
+  girError(geDebug, 'HandleUnion...');
   ProperUnit := FGroup.GetUnitForType(utTypes);
   if ProperUnit <> Self then
   begin
@@ -1701,6 +1721,9 @@ begin
     Result := AItem.DeprecatedOverride;
 
   Result := Result and (AItem.Version <= FNameSpace.MaxSymbolVersion);
+
+  if not Result then
+     girError(geDebug, AItem.Name + ' does not meet version constraints!');
 end;
 
 procedure TPascalUnit.WriteForwardDefinition(AType: TGirBaseType);
@@ -1717,6 +1740,7 @@ procedure TPascalUnit.WriteForwardDefinition(AType: TGirBaseType);
   end;
 
 begin
+  girError(geDebug, 'Write Forward Definition for ' + AType.Name);
   if AType.InheritsFrom(TgirFuzzyType) and (TgirFuzzyType(AType).ResolvedType <> nil) then
   begin
     TgirFuzzyType(AType).ResolvedType.ImpliedPointerLevel := AType.ImpliedPointerLevel;
@@ -1760,6 +1784,7 @@ var
   Args: String;
   Param: TGirFunctionParam;
 begin
+  girError(geDebug, 'Write Wrapper Object...');
   if AWantSelf then
   begin
     CallParams := '';
@@ -1903,6 +1928,9 @@ begin
     APointerLevel := 1;
   end;
 
+  girError(geDebug,'TypeAsString ' + TranslatedName + ', ' + ACTypeAsBackup + ', ' + BackupNoPointers +
+           ', pointer level ' + IntToStr(APointerLevel));
+
   if APointerLevel = 0 then
   begin
     Result := AType.TranslatedName;
@@ -1911,9 +1939,11 @@ begin
   end
   else
   begin
+    girError(geDebug,'C type ' + AType.CType);
     if AType.CType = '' then
       AType.CType:=ACTypeAsBackup;
     Result := MakePascalTypeFromCType(AType.CType, APointerLevel);
+    girError(geDebug,'Pascal type ' + Result);
   end;
   if APointerLevel > AType.ImpliedPointerLevel then
   begin
@@ -2032,6 +2062,7 @@ var
   Symbol: String;
 
 begin
+  girError(geDebug, 'WriteRecord...');
   TypeDecl := TStringList.Create;
   TypeDecl.Add('');
   if Not AIsUnion then
@@ -2430,14 +2461,16 @@ begin
   if AList.Count = 0 then
     Exit;
 
+  girError(geDebug, '-- Process all types --');
   for i := 0 to AList.Count-1 do
   begin
     BaseType := TGirBaseType(AList.Items[i]);
+    girError(geDebug, 'BaseType: ' + BaseType.Name);
     if not MeetsVersionConstraints(BaseType) then
       Continue;
     ProcessType(BaseType);
   end;
-
+  girError(geDebug, '-- END of all types --');
 end;
 
 procedure TPascalUnit.ProcessFunctions(AList: TList);
@@ -2461,6 +2494,7 @@ var
   ImplementationUses: TPUses;
   NeedUnit: String;
 begin
+  girError(geDebug,'GenerateUnit... ');
   for i := 0 to FNameSpace.RequiredNameSpaces.Count-1 do
   begin
     NS := TgirNamespace(FNameSpace.RequiredNameSpaces.Items[i]);
@@ -2518,8 +2552,14 @@ begin
   end;
 
   if NameSpace.NameSpace = 'GLib' then
+  begin
+    girError(geDebug,'Adding GLib support code...');
     AddGLibSupportCode;
-
+  end
+  else
+  begin
+    girError(geWarn,'GLib not referenced!');
+  end
 end;
 
 function TPascalUnit.AsStream: TStringStream;

@@ -190,7 +190,7 @@ begin
   ANode := ANode.FirstChild;
   while ANode <> nil do
   begin
-    //girError(geDebug, 'Parsing Node "'+ANode.NodeName+'"');
+    girError(geDebug, 'Parsing Node "'+ANode.NodeName+'"');
     ParseSubNode(ANode);
     ANode := ANode.NextSibling;
   end;
@@ -206,6 +206,7 @@ end;
 function TgirNamespace.AddFuzzyType(AName: String; ACType: String
   ): TGirBaseType;
 begin
+  girError(geDebug,'Add fuzzy type ' + AName + ', C type ' + ACType);
   Result := TgirFuzzyType.Create(Self, AName, ACType);
   AddType(Result);
   FUnresolvedTypes.Add(Result);
@@ -361,14 +362,24 @@ procedure TgirNamespace.AddType(AType: TGirBaseType);
 var
   PrevFound: TGirBaseType = nil;
 begin
+  girError(geDebug,'Add type ' + AType.Name + ', C type ' + AType.CType);
+
   PrevFound := TGirBaseType(FTypes.Find(AType.Name));
   if (PrevFound <> nil) and (PrevFound.ObjectType = otFuzzyType)  then
   begin
     (PrevFound as TgirFuzzyType).ResolvedType := AType;
     //WriteLn('Resolved FuzzyType: ', AType.Name);
+    girError(geDebug,'Resolved fuzzy type ' + AType.Name + ', C type ' + AType.CType);
+
     FUnresolvedTypes.Remove(PrevFound);
   end;
-  //if PrevFound <> nil then WriteLn('Found Name Already Added: ', AType.Name, ' ', PrevFound.ObjectType, ' ', AType.ObjectType);
+
+  if PrevFound <> nil then
+  begin
+    girError(geDebug,'Found Name Already Added ' + AType.Name + ', C type ' + AType.CType);
+    //WriteLn('Found Name Already Added: ', AType.Name, ' ', PrevFound.ObjectType, ' ', AType.ObjectType);
+  end;
+
   if PrevFound = nil then
     FTypes.Add(AType.Name, AType);
 end;
@@ -384,6 +395,7 @@ var
   Current: TGirBaseType;
   ReqNS: TgirNamespace;
 begin
+  girError(geDebug,'TgirNamespace.ResolveFuzzyTypes');
   i:= 0;
   FuzzyI := 0;
   Fuzzy := nil;
@@ -405,12 +417,14 @@ begin
     begin
       if {(Tmp.CType = Fuzzy.CType) or} (Tmp.Name = Fuzzy.Name) then
       begin
+        girError(geDebug,'Update ResolvedType...');
         Fuzzy.ResolvedType := Tmp;
         Tmp.ImpliedPointerLevel:=Fuzzy.ImpliedPointerLevel;
         Tmp.DeprecatedOverride:= Tmp.DeprecatedOverride or Fuzzy.DeprecatedOverride;
         i := FuzzyI+1;
         Fuzzy := nil;
         //WriteLn('Resolved Fuzzy Type: ', Tmp.CType);
+        girError(geDebug,'Resolved fuzzy type: ' + Tmp.CType);
         continue;
       end;
     end;
@@ -440,6 +454,7 @@ begin
         if (Current.ObjectType = otFuzzyType) and (TgirFuzzyType(Current).ResolvedType <> nil) then
           Current := TgirFuzzyType(Current).ResolvedType;
         Fuzzy.ResolvedType := Current;
+        girError(geDebug,'Resolved fuzzy type: ' + Current.CType + ' in namespace ' + ReqNS.FNameSpace);
         Break;
       end;
     end;
@@ -476,7 +491,7 @@ begin
     gtInterface:   HandleInterface(ANode);
     gtMethod:      HandleFunction(ANode);
     else
-      girError(geError, 'Unknown NodeType: '+ANode.NodeName);
+      girError(geDebug, 'Unhandled NodeType: ' + ANode.NodeName + ', name: ' + TDOMElement(ANode).GetAttribute('name'));
   end;
 end;
 
@@ -502,6 +517,7 @@ var
   PointerLevel: Integer = 0;
   PlainCType: String;
 begin
+  girError(geDebug,'LookupTypeByName: ' + AName);
   Result := nil;
   NS := Self;
   // some basic fixes
@@ -540,13 +556,29 @@ begin
 
   //if NS <> Self then WriteLn('Self NS = ', NameSpace, ' Lookup NS = ', NS.NameSpace);
   Result := TGirBaseType(NS.Types.Find(AName));
+
+  if (Result <> nil) then
+  begin
+     girError(geDebug,'BaseType: ' + Result.Name + ', C type: ' + Result.CType +
+              ', Translated name: ' + Result.TranslatedName + ', GLib type:' + Result.GLibGetType);
+     if Result.ObjectType = otFuzzyType then
+     begin
+       girError(geDebug,'-- fuzzy type --');
+       if TgirFuzzyType(Result).ResolvedType <> nil then
+         girError(geDebug,'--> Resolved type: ' + TgirFuzzyType(Result).ResolvedType.Name); // + add more info...?
+     end;
+  end;
+
   if (Result <> nil) and (Result.ObjectType = otFuzzyType) and (TgirFuzzyType(Result).ResolvedType <> nil) then
     Result := TgirFuzzyType(Result).ResolvedType;
 
   // if we find a result in another namespace then we need to depend on that namespace/unit
   if (NS <> nil) and (NS <> Self) and (Result <> nil) then
+  begin
+    girError(geDebug,'--> depend on namespace: ' + NS.NameSpace);
     if FRequiredNameSpaces.IndexOf(NS) = -1 then
       FRequiredNameSpaces.Add(NS);
+  end;
 
   if (Result = nil) and Not SearchOnly then
       Result := NS.AddFuzzyType(AName, ACType);

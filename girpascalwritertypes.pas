@@ -1267,6 +1267,7 @@ begin
   if (AFunction.CIdentifier = 'g_io_module_query')
   or (AFunction.CIdentifier = 'g_io_module_load')
   or (AFunction.CIdentifier = 'g_io_module_unload')
+  or (AFunction.CIdentifier = 'g_io_channel_win32_new_stream_socket')
   then
     Exit; // they are functions to be implemented by a runtime loadable module, they are not actually functions in glib/gmodule/gio
 

@@ -1062,7 +1062,7 @@ begin
       CName := AItem.Members.Member[i]^.CIdentifier;
       if CName = 'ATK_HYPERLINK_IS_INLINE' then
         CName :='ATK_HYPERLINK_IS_INLINE_';
-      Entry := CName + TypeName+ ' = ' + AItem.Members.Member[i]^.Value+';';
+      Entry := SanitizeName(CName) + TypeName+ ' = ' + AItem.Members.Member[i]^.Value+';';
       ConstSection.Lines.Add(IndentText(Entry,2,0));
     end;
   AItem.Writing:=msWritten;

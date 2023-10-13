@@ -1250,6 +1250,7 @@ var
   Entry: String;
   InLineS: String = '';
   DeprecatedS: String = '';
+  AdjustedFunctionName: String;
   ProperUnit: TPascalUnit;
   OptionsIndicateWrapperMethod: Boolean;
 begin
@@ -1297,8 +1298,9 @@ begin
   else
     PostFix := ''+DeprecatedS;
 
+  AdjustedFunctionName := SanitizeName(AFunction.Name, AExistingUsedNames);
   // first wrapper proc
-  Entry := Prefix + RoutineType +' '+ SanitizeName(AFunction.Name, AExistingUsedNames)+ParenParams(Params)+Returns+InLineS;
+  Entry := Prefix + RoutineType +' '+ AdjustedFunctionName+ParenParams(Params)+Returns+InLineS;
 
   // no need to pass self that will not be used
   if (not AIsMethod) and AWantWrapperForObject then
@@ -1347,7 +1349,8 @@ begin
   //RoutineType, AObjectName, AObjectFunctionName, AParams, AFunctionReturns, AFlatFunctionName, AWantSelf
   // writes the implementation of what we declared in the object
   if AWantWrapperForObject and  (Prefix = '') and OptionsIndicateWrapperMethod and not (goNoWrappers in FOptions) then
-     WriteWrapperForObject(RoutineType, AItem.TranslatedName, ProperUnit.SanitizeName(AFunction.Name), AFunction.Params, Returns, AFunction.CIdentifier, AIsMethod);
+     WriteWrapperForObject(RoutineType, AItem.TranslatedName, AdjustedFunctionName,
+                           AFunction.Params, Returns, AFunction.CIdentifier, AIsMethod);
 end;
 
 procedure TPascalUnit.HandleObject(AItem: TgirObject; AObjectType: TGirToken);

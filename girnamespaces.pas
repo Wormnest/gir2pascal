@@ -356,6 +356,13 @@ begin
     for i := 0 to GLibCTypesCount-1 do
       AddNativeTypeDef(TGLibConversionData[i].CTypeName, TGLibConversionData[i].PascalTypeName, '');
   end;
+
+  if NameSpace = 'freetype2' then
+  begin
+    // Add incomplete freetype2 int32 type
+    girError(geDebug,'Add freetype2 base type (int32)...');
+    AddNativeTypeDef('int32', 'cint32', '');
+  end;
 end;
 
 procedure TgirNamespace.AddType(AType: TGirBaseType);

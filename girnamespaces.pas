@@ -497,6 +497,9 @@ begin
     gtClass:       HandleClass(ANode);
     gtInterface:   HandleInterface(ANode);
     gtMethod:      HandleFunction(ANode);
+    gtFunctionMacro, { the introspection data doesn't supply us with enough info to call the real function }
+    gtDocSection:    { ignore documentation section }
+                   ;
     else
       girError(geDebug, 'Unhandled NodeType: ' + ANode.NodeName + ', name: ' + TDOMElement(ANode).GetAttribute('name'));
   end;

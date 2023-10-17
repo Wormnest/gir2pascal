@@ -357,7 +357,16 @@ begin
       AddNativeTypeDef(TGLibConversionData[i].CTypeName, TGLibConversionData[i].PascalTypeName, '');
   end;
 
-  if NameSpace = 'freetype2' then
+  { -- Manual overrides mostly for libraries that don't import GLib --}
+
+  if NameSpace = 'cairo' then
+  begin
+    // Add cairo use of gdouble and gint
+    girError(geDebug,'Add cairo types (gdouble, gint)...');
+    AddNativeTypeDef('gdouble', 'cdouble', '');
+    AddNativeTypeDef('gint',    'cint',    '');
+  end
+  else if NameSpace = 'freetype2' then
   begin
     // Add incomplete freetype2 int32 type
     girError(geDebug,'Add freetype2 base type (int32)...');
